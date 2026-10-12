@@ -33,11 +33,15 @@ public abstract class AbstractIntegrationTest {
             registry.add("spring.datasource.username", POSTGRESQL_CONTAINER::getUsername);
             registry.add("spring.datasource.password", POSTGRESQL_CONTAINER::getPassword);
         } else {
-            // Fallback for local environments where Docker is not installed
-            String port = System.getProperty("local.pg.port", "5433");
-            registry.add("spring.datasource.url", () -> "jdbc:postgresql://127.0.0.1:" + port + "/postgres");
-            registry.add("spring.datasource.username", () -> "postgres");
-            registry.add("spring.datasource.password", () -> "");
+            // Fallback for local environments where Docker Desktop is not installed
+            String host = System.getenv().getOrDefault("POSTGRES_HOST", "127.0.0.1");
+            String port = System.getenv().getOrDefault("POSTGRES_PORT", System.getProperty("local.pg.port", "5432"));
+            String user = System.getenv().getOrDefault("POSTGRES_USER", "postgres");
+            String pass = System.getenv().getOrDefault("POSTGRES_PASSWORD", "");
+            String db = System.getenv().getOrDefault("POSTGRES_DB", "textile_accounts");
+            registry.add("spring.datasource.url", () -> "jdbc:postgresql://" + host + ":" + port + "/" + db);
+            registry.add("spring.datasource.username", () -> user);
+            registry.add("spring.datasource.password", () -> pass);
         }
     }
 }
