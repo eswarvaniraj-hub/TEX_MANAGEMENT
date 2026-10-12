@@ -79,6 +79,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                 // All other /api/** endpoints require OWNER role
                 .requestMatchers("/api/**").hasRole("OWNER")
+                // Public SPA static assets & client routes
+                .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico", "/vite.svg").permitAll()
+                .requestMatchers(HttpMethod.GET, "/*", "/*/*").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex

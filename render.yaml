@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: tex-arun-app
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: OWNER_USERNAME
+        value: owner
+      - key: OWNER_PASSWORD
+        generateValue: true
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: tex-arun-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: tex-arun-db
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: tex-arun-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: tex-arun-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: tex-arun-db
+          property: password
+
+databases:
+  - name: tex-arun-db
+    plan: free
+    region: singapore
+    databaseName: textile_accounts
+    user: postgres
