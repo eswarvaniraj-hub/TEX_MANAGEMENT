@@ -45,9 +45,10 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
   });
 
   if (response.status === 401 && !options.skipAuthRedirect && !endpoint.includes('/auth/login')) {
-    // Session expired or unauthenticated; route to login page
+    // Session expired or unauthenticated; signal auth context and route to login page
+    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+      window.location.href = '/login?expired=true';
     }
   }
 

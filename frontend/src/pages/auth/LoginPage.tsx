@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -23,6 +23,7 @@ import {
   IconAlertCircle,
   IconBuildingStore,
   IconShieldLock,
+  IconInfoCircle,
 } from '@tabler/icons-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -36,6 +37,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export const LoginPage: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isExpired = searchParams.get('expired') === 'true';
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -100,6 +103,18 @@ export const LoginPage: React.FC = () => {
                   Single Owner Mode
                 </Badge>
               </Group>
+
+              {isExpired && !errorMessage && (
+                <Alert
+                  icon={<IconInfoCircle size={16} />}
+                  color="yellow"
+                  radius="sm"
+                  title="Session Expired"
+                  role="alert"
+                >
+                  Your previous session timed out. Please sign in again.
+                </Alert>
+              )}
 
               {errorMessage && (
                 <Alert

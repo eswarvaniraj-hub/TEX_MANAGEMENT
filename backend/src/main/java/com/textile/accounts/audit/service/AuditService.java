@@ -6,8 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class AuditService {
@@ -18,6 +22,12 @@ public class AuditService {
     public AuditService(AuditEventRepository auditEventRepository, Clock clock) {
         this.auditEventRepository = auditEventRepository;
         this.clock = clock;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AuditEvent> getRecentEvents(int limit) {
+        int effectiveLimit = Math.max(1, Math.min(limit, 200));
+        return auditEventRepository.findAll(PageRequest.of(0, effectiveLimit, Sort.by(Sort.Direction.DESC, "occurredAt"))).getContent();
     }
 
     /**
@@ -57,4 +67,14 @@ public class AuditService {
     public AuditEvent logSecurityEvent(String username, String action, String summary, String ipAddress, Long actorUserId) {
         return logEvent(actorUserId, username, action, "SECURITY", null, summary, null, ipAddress);
     }
+
+    /**
+     * General entity audit logging helper.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public AuditEvent logAuditEvent(String actorUsername, String action, String entityType, String entityId, String summary, Object details) {
+        String detailsStr = details != null ? details.toString() : null;
+        return logEvent(null, actorUsername, action, entityType, entityId, summary, detailsStr, null);
+    }
 }
+
