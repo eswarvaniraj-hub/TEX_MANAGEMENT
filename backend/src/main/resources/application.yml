@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: textile-accounts
+  profiles:
+    active: dev
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  session:
+    jdbc:
+      initialize-schema: never
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

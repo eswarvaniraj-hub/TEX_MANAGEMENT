@@ -1,0 +1,37 @@
+# Environment & secrets
+.env
+*.env
+!.env.example
+*.pem
+*.key
+
+# Java & Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+**/.flattened-pom.xml
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
+
+# IDE & Editor
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+scratch/
+.local-pg-data/

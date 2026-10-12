@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: textile-accounts-postgres-dev
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-textile_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-textile_password_change_me}
+      POSTGRES_DB: ${POSTGRES_DB:-textile_accounts}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_dev_data:
+    driver: local
