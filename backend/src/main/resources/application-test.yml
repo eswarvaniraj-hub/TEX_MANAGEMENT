@@ -15,3 +15,7 @@ management:
   endpoint:
     health:
       show-details: never
+
+OWNER_USERNAME: test_bootstrap_owner
+OWNER_PASSWORD: TestBootstrapPassword123!
+

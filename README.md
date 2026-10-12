@@ -108,9 +108,16 @@ POSTGRES_PORT=5432
 POSTGRES_DB=textile_accounts
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your_actual_postgres_password
+
+# Initial Owner Bootstrap (Required on first startup when app_user table is empty)
+OWNER_USERNAME=owner
+OWNER_PASSWORD=InitialPassword123!
 ```
 
-> **Note:** `.env` is listed in `.gitignore` and will never be committed to Git.
+> **Security Note:**
+> - When `app_user` is empty, Spring Boot creates the `OWNER` account on startup and sets `must_change_password=true`. Passwords must be at least 12 characters.
+> - After your initial login and password change in the browser, delete `OWNER_PASSWORD` from `.env`.
+> - `.env` is listed in `.gitignore` and will never be committed to Git.
 
 ---
 
@@ -136,7 +143,36 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 The backend starts on port `8080`.
 - Flyway automatically validates and applies `V1__initial_foundation.sql`.
 - Hibernate schema validation verifies all entities against the database (`ddl-auto=validate`).
+- Owner bootstrap creates the initial owner if the user table is empty.
 - Public health check: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
+
+---
+
+### Step 5: First-Time Login & Password Change
+
+1. Navigate to [http://localhost:5173](http://localhost:5173). You will be directed to `/login`.
+2. Enter your initial credentials:
+   - **Username:** `owner` (or your configured `OWNER_USERNAME`)
+   - **Password:** `InitialPassword123!` (or your configured `OWNER_PASSWORD`)
+3. The server enforces `must_change_password=true` and displays the modal prompting for a new master password (minimum 12 characters).
+4. Enter your current password and your new private password.
+5. Upon submission, the server re-hashes the new password with `{bcrypt}` (cost 12), invalidates the bootstrap session, updates the database, and unlocks full application access.
+6. Delete `OWNER_PASSWORD` from your `.env` file.
+
+---
+
+### Emergency Offline Password Reset CLI
+
+If the owner is locked out or forgets their password:
+
+```powershell
+cd backend
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:NEW_OWNER_PASSWORD = "YourNewSecurePassword123!"
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=reset-owner-password
+```
+
+This runs an offline routine that does not start Tomcat web server, resets the password hash, unlocks the account, sets `must_change_password=true`, records an immutable audit row, and exits cleanly.
 
 ---
 

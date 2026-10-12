@@ -1,78 +1,135 @@
-import { useQuery } from '@tanstack/react-query';
-import { Container, Card, Text, Badge, Group, Title, Loader, Stack, Alert } from '@mantine/core';
-import { IconCheck, IconAlertTriangle, IconServer } from '@tabler/icons-react';
-
-interface HealthResponse {
-  status: string;
-}
-
-export async function fetchHealth(): Promise<HealthResponse> {
-  const response = await fetch('/api/v1/health');
-  if (!response.ok) {
-    throw new Error(`Health check failed with HTTP ${response.status}`);
-  }
-  return response.json();
-}
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LoginPage } from './pages/auth/LoginPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AppLayout } from './components/layout/AppLayout';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { ComingSoonPage } from './pages/common/ComingSoonPage';
 
 export default function App() {
-  const { data, error, isLoading } = useQuery<HealthResponse>({
-    queryKey: ['systemHealth'],
-    queryFn: fetchHealth,
-  });
-
   return (
-    <Container size="sm" py="xl">
-      <Stack gap="lg">
-        <div>
-          <Title order={2} c="dark.8">
-            Textile Accounts Management
-          </Title>
-          <Text c="dimmed" size="sm">
-            Phase 1: Foundation &amp; Architecture Verification
-          </Text>
-        </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
 
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Group justify="space-between" mb="xs">
-            <Group gap="xs">
-              <IconServer size={22} color="#4f46e5" />
-              <Text fw={600} size="md">
-                Backend System Status
-              </Text>
-            </Group>
+        {/* Protected routes wrapped in auth check and main responsive layout */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route
+              path="/sales"
+              element={
+                <ComingSoonPage
+                  moduleName="Sales Invoicing"
+                  phase="Phase 4"
+                  description="GST tax invoices, delivery challans, rate management, and automatic double-entry journal postings."
+                />
+              }
+            />
+            <Route
+              path="/purchases"
+              element={
+                <ComingSoonPage
+                  moduleName="Purchase Bills"
+                  phase="Phase 5"
+                  description="Yarn and fabric purchase invoices, inward challans, supplier tax tracking, and stock intake."
+                />
+              }
+            />
+            <Route
+              path="/payments"
+              element={
+                <ComingSoonPage
+                  moduleName="Payments & Receipts"
+                  phase="Phase 6"
+                  description="Internal voucher recordings, customer payment collections, and supplier payouts with FIFO bill allocations."
+                />
+              }
+            />
+            <Route
+              path="/expenses"
+              element={
+                <ComingSoonPage
+                  moduleName="Expenses Management"
+                  phase="Phase 6"
+                  description="Direct and indirect operational expenses, petty cash disbursements, and tax categorization."
+                />
+              }
+            />
+            <Route
+              path="/banking"
+              element={
+                <ComingSoonPage
+                  moduleName="Banking & Cash"
+                  phase="Phase 6"
+                  description="Internal cashbook and bank account register with cheque clearance and statement matching."
+                />
+              }
+            />
+            <Route
+              path="/parties"
+              element={
+                <ComingSoonPage
+                  moduleName="Parties & GST Profiles"
+                  phase="Phase 3"
+                  description="Customer, supplier, weaver, and agent accounts with GSTIN validation and state code detection."
+                />
+              }
+            />
+            <Route
+              path="/masters"
+              element={
+                <ComingSoonPage
+                  moduleName="Item Masters & Catalog"
+                  phase="Phase 3"
+                  description="Yarn counts, grey cloth qualities, finished fabrics, and standard HSN classification codes."
+                />
+              }
+            />
+            <Route
+              path="/accounting"
+              element={
+                <ComingSoonPage
+                  moduleName="General Ledger & Daybook"
+                  phase="Phase 7"
+                  description="Immutable double-entry journal, daybook cash register, and account statement inquiries."
+                />
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ComingSoonPage
+                  moduleName="Reports & GST Filing"
+                  phase="Phase 8"
+                  description="Trial balance, Profit & Loss, Balance Sheet, and GSTR-1 / GSTR-3B monthly filing summaries."
+                />
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ComingSoonPage
+                  moduleName="System Settings"
+                  phase="Phase 9"
+                  description="Business profile configuration, financial year locking, and master system preferences."
+                />
+              }
+            />
+            <Route
+              path="/audit-log"
+              element={
+                <ComingSoonPage
+                  moduleName="Security Audit Log"
+                  phase="Phase 9"
+                  description="Complete immutable security audit trail of authentication events and data revisions."
+                />
+              }
+            />
+          </Route>
+        </Route>
 
-            {isLoading && <Loader size="xs" color="indigo" />}
-            {data && (
-              <Badge
-                color={data.status === 'UP' ? 'teal' : 'red'}
-                variant="light"
-                leftSection={<IconCheck size={12} />}
-              >
-                {data.status}
-              </Badge>
-            )}
-            {error && (
-              <Badge color="red" variant="light" leftSection={<IconAlertTriangle size={12} />}>
-                UNAVAILABLE
-              </Badge>
-            )}
-          </Group>
-
-          <Text size="sm" c="dimmed" mt="xs">
-            Connected to Spring Boot 4.1.1 via Vite dev proxy at{' '}
-            <Text span fw={500} c="dark.6">
-              /api/v1/health
-            </Text>
-            .
-          </Text>
-
-          {error && (
-            <Alert color="red" title="Connection Error" mt="md" radius="sm">
-              {error instanceof Error ? error.message : 'Failed to connect to backend service'}
-            </Alert>
-          )}
-        </Card>
-      </Stack>
-    </Container>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
