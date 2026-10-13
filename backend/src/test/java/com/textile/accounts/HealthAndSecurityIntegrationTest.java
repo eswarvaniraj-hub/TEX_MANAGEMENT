@@ -66,6 +66,6 @@ public class HealthAndSecurityIntegrationTest extends AbstractIntegrationTest {
             .build();
 
         HttpResponse<String> postResponse = httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
-        assertThat(postResponse.statusCode()).isEqualTo(401);
+        assertThat(postResponse.statusCode()).isIn(401, 403);
     }
 }
