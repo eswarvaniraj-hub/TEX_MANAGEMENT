@@ -62,16 +62,35 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
     }
 
     private void parseAndApplyDatabaseUrl(String rawUrl, Map<String, Object> targetProps) {
-        if (rawUrl.startsWith("jdbc:")) {
-            targetProps.put("spring.datasource.url", rawUrl);
-            targetProps.put("spring.flyway.url", rawUrl);
-            targetProps.put("SPRING_DATASOURCE_URL", rawUrl);
-            targetProps.put("SPRING_FLYWAY_URL", rawUrl);
+        if (rawUrl == null || rawUrl.isBlank()) {
             return;
         }
 
-        if (rawUrl.startsWith("postgres://") || rawUrl.startsWith("postgresql://")) {
-            String cleanUriString = rawUrl;
+        String toParse = rawUrl.trim();
+
+        // If it starts with jdbc: but contains credentials (e.g. jdbc:postgresql://user:pass@host/db),
+        // org.postgresql.Driver rejects credentials in the URL authority.
+        // We must strip "jdbc:" and treat it as a standard URI so credentials are extracted
+        // and the clean jdbcUrl without credentials in the host is produced.
+        if (toParse.startsWith("jdbc:")) {
+            if (!toParse.contains("@")) {
+                targetProps.put("spring.datasource.url", toParse);
+                targetProps.put("spring.flyway.url", toParse);
+                targetProps.put("SPRING_DATASOURCE_URL", toParse);
+                targetProps.put("SPRING_FLYWAY_URL", toParse);
+                return;
+            }
+            if (toParse.startsWith("jdbc:postgresql://")) {
+                toParse = "postgresql://" + toParse.substring("jdbc:postgresql://".length());
+            } else if (toParse.startsWith("jdbc:postgres://")) {
+                toParse = "postgresql://" + toParse.substring("jdbc:postgres://".length());
+            } else {
+                toParse = toParse.substring("jdbc:".length());
+            }
+        }
+
+        if (toParse.startsWith("postgres://") || toParse.startsWith("postgresql://")) {
+            String cleanUriString = toParse;
             if (cleanUriString.startsWith("postgres://")) {
                 cleanUriString = "postgresql://" + cleanUriString.substring("postgres://".length());
             }
@@ -115,6 +134,9 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             }
 
             if (host != null && path != null) {
+                if (query != null) {
+                    query = query.replace("channel_binding=", "channelBinding=");
+                }
                 String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path + (query != null && !query.isBlank() ? "?" + query : "");
                 targetProps.put("spring.datasource.url", jdbcUrl);
                 targetProps.put("spring.flyway.url", jdbcUrl);

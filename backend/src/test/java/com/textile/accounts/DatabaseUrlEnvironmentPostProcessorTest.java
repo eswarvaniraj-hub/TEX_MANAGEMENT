@@ -110,4 +110,22 @@ public class DatabaseUrlEnvironmentPostProcessorTest {
         assertThat(env.getProperty("spring.datasource.username")).isEqualTo("real_db_user");
         assertThat(env.getProperty("SPRING_DATASOURCE_USERNAME")).isEqualTo("real_db_user");
     }
+
+    @Test
+    @DisplayName("Handles Neon or cloud URL prefixed with jdbc: containing embedded user, password, and channel_binding")
+    void handlesJdbcUrlWithEmbeddedCredentialsAndChannelBinding() throws Exception {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("DATABASE_URL", "jdbc:postgresql://mock_neon_user:mock_npg_test_token_xyz@ep-mock-demo-pooler.c-7.us-east-2.aws.neon.tech/sample_db?sslmode=require&channel_binding=require");
+
+        processor.postProcessEnvironment(env, new SpringApplication());
+
+        String jdbcUrl = env.getProperty("spring.datasource.url");
+        assertThat(jdbcUrl).isEqualTo("jdbc:postgresql://ep-mock-demo-pooler.c-7.us-east-2.aws.neon.tech:5432/sample_db?sslmode=require&channelBinding=require");
+        assertThat(env.getProperty("spring.datasource.username")).isEqualTo("mock_neon_user");
+        assertThat(env.getProperty("spring.datasource.password")).isEqualTo("mock_npg_test_token_xyz");
+        assertThat(env.getProperty("spring.flyway.url")).isEqualTo(jdbcUrl);
+        assertThat(env.getProperty("spring.flyway.user")).isEqualTo("mock_neon_user");
+        assertThat(env.getProperty("spring.flyway.password")).isEqualTo("mock_npg_test_token_xyz");
+        assertThat(new org.postgresql.Driver().acceptsURL(jdbcUrl)).isTrue();
+    }
 }
