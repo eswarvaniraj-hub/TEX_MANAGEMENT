@@ -64,6 +64,11 @@ public class MustChangePasswordFilter extends OncePerRequestFilter {
 
     private boolean isAllowedPath(String path) {
         if (path == null) return false;
+        // Non-API paths (HTML, JS, CSS, static web assets) must always be allowed
+        // so that the frontend SPA can load and display the Change Password modal!
+        if (!path.startsWith("/api/")) {
+            return true;
+        }
         for (String allowed : ALLOWED_PATHS) {
             if (path.equals(allowed) || path.endsWith(allowed)) {
                 return true;

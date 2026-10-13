@@ -224,6 +224,11 @@ public class AuthenticationIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("PASSWORD_CHANGE_REQUIRED"));
 
+        // Root SPA path / is not blocked by MustChangePasswordFilter (passes through to resource handler)
+        mockMvc.perform(get("/")
+                        .cookie(sessionCookie))
+                .andExpect(status().isNotFound());
+
         // GET /auth/me is allowed
         mockMvc.perform(get("/api/v1/auth/me")
                         .cookie(sessionCookie))
